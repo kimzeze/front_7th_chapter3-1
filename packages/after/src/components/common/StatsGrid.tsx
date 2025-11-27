@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { Card, CardContent } from "../ui/card";
 
 interface Stat {
   label: string;
@@ -19,154 +20,29 @@ interface StatsGridProps {
 }
 
 export const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => {
+  // stats를 배열로 변환하여 map으로 렌더링
+  const statsArray: Stat[] = [
+    { label: "전체", value: stats.total, color: "#1976d2" },
+    stats.stat1,
+    stats.stat2,
+    stats.stat3,
+    stats.stat4,
+  ];
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-        gap: "10px",
-        marginBottom: "15px",
-      }}
-    >
-      <div
-        style={{
-          padding: "12px 15px",
-          background: "#e3f2fd",
-          border: "1px solid #90caf9",
-          borderRadius: "3px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "4px",
-          }}
-        >
-          전체
-        </div>
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#1976d2",
-          }}
-        >
-          {stats.total}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "12px 15px",
-          background: "#e8f5e9",
-          border: "1px solid #81c784",
-          borderRadius: "3px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "4px",
-          }}
-        >
-          {stats.stat1.label}
-        </div>
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#388e3c",
-          }}
-        >
-          {stats.stat1.value}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "12px 15px",
-          background: "#fff3e0",
-          border: "1px solid #ffb74d",
-          borderRadius: "3px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "4px",
-          }}
-        >
-          {stats.stat2.label}
-        </div>
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#f57c00",
-          }}
-        >
-          {stats.stat2.value}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "12px 15px",
-          background: "#ffebee",
-          border: "1px solid #e57373",
-          borderRadius: "3px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "4px",
-          }}
-        >
-          {stats.stat3.label}
-        </div>
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#d32f2f",
-          }}
-        >
-          {stats.stat3.value}
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "12px 15px",
-          background: "#f5f5f5",
-          border: "1px solid #bdbdbd",
-          borderRadius: "3px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            marginBottom: "4px",
-          }}
-        >
-          {stats.stat4.label}
-        </div>
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#424242",
-          }}
-        >
-          {stats.stat4.value}
-        </div>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+      {statsArray.map((stat, index) => (
+        <Card key={index}>
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">
+              {stat.label}
+            </div>
+            <div className="text-2xl font-bold" style={{ color: stat.color }}>
+              {stat.value}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
