@@ -1,5 +1,5 @@
+import { Header } from "./components/common/Header";
 import React from "react";
-import { Header } from "./components/organisms";
 import { ManagementPage } from "./pages/ManagementPage";
 
 export const App: React.FC = () => {
