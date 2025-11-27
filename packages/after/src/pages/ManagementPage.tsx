@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import { Button, Badge } from "../components/atoms";
-import { Alert, Table, Modal } from "../components/organisms";
+import { Table, Modal } from "../components/organisms";
 import { FormInput, FormSelect, FormTextarea } from "../components/molecules";
 import { userService } from "../services/userService";
 import { postService } from "../services/postService";
@@ -10,6 +10,7 @@ import "../styles/components.css";
 
 // ShadCN Components
 import { Button } from "../components/ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
 
 // Common Components
 import { PageHeader } from "../components/common/PageHeader";
@@ -286,7 +287,7 @@ export const ManagementPage: React.FC = () => {
           />
 
           <div>
-            <div style={{ marginBottom: "15px", textAlign: "right" }}>
+            <div className="mb-4 text-right">
               <Button onClick={() => setIsCreateModalOpen(true)}>
                 새로 만들기
               </Button>
@@ -391,9 +392,11 @@ export const ManagementPage: React.FC = () => {
         <div>
           {selectedItem && (
             <Alert variant="info">
-              ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
-              {entityType === "post" &&
-                ` | 조회수: ${(selectedItem as Post).views}`}
+              <AlertDescription>
+                ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
+                {entityType === "post" &&
+                  ` | 조회수: ${(selectedItem as Post).views}`}
+              </AlertDescription>
             </Alert>
           )}
 
