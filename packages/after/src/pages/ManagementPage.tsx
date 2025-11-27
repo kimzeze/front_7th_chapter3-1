@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import { Button, Badge } from "../components/atoms";
-import { Table, Modal } from "../components/organisms";
-import { FormInput, FormSelect, FormTextarea } from "../components/molecules";
+import { Table } from "../components/organisms";
 import { userService } from "../services/userService";
 import { postService } from "../services/postService";
 import type { User } from "../services/userService";
@@ -11,6 +10,13 @@ import "../styles/components.css";
 // ShadCN Components
 import { Button } from "../components/ui/button";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../components/ui/dialog";
 
 // Common Components
 import { PageHeader } from "../components/common/PageHeader";
@@ -330,7 +336,7 @@ export const ManagementPage: React.FC = () => {
         </div>
       </div>
 
-      <Modal
+      {/* <Modal
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
@@ -361,9 +367,45 @@ export const ManagementPage: React.FC = () => {
             <PostFormFields formData={formData} onChange={setFormData} />
           )}
         </div>
-      </Modal>
+      </Modal> */}
+      <Dialog
+        open={isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) {
+            setFormData({});
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[900px]">
+          <DialogHeader>
+            <DialogTitle>
+              새 {entityType === "user" ? "사용자" : "게시글"} 만들기
+            </DialogTitle>
+          </DialogHeader>
+          <div>
+            {entityType === "user" ? (
+              <UserFormFields formData={formData} onChange={setFormData} />
+            ) : (
+              <PostFormFields formData={formData} onChange={setFormData} />
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                setFormData({});
+              }}
+            >
+              취소
+            </Button>
+            <Button onClick={handleCreate}>생성</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Modal
+      {/* <Modal
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
@@ -406,7 +448,55 @@ export const ManagementPage: React.FC = () => {
             <PostFormFields formData={formData} onChange={setFormData} />
           )}
         </div>
-      </Modal>
+      </Modal> */}
+      <Dialog
+        open={isEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) {
+            setFormData({});
+            setSelectedItem(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[900px]">
+          <DialogHeader>
+            <DialogTitle>
+              {entityType === "user" ? "사용자" : "게시글"} 수정
+            </DialogTitle>
+          </DialogHeader>
+          <div>
+            {selectedItem && (
+              <Alert variant="info">
+                <AlertDescription>
+                  ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
+                  {entityType === "post" &&
+                    ` | 조회수: ${(selectedItem as Post).views}`}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {entityType === "user" ? (
+              <UserFormFields formData={formData} onChange={setFormData} />
+            ) : (
+              <PostFormFields formData={formData} onChange={setFormData} />
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setFormData({});
+                setSelectedItem(null);
+              }}
+            >
+              취소
+            </Button>
+            <Button onClick={handleUpdate}>수정 완료</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
