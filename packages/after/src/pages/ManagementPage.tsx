@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Badge } from "../components/atoms";
+// import { Button, Badge } from "../components/atoms";
 import { Alert, Table, Modal } from "../components/organisms";
 import { FormInput, FormSelect, FormTextarea } from "../components/molecules";
 import { userService } from "../services/userService";
@@ -7,6 +7,19 @@ import { postService } from "../services/postService";
 import type { User } from "../services/userService";
 import type { Post } from "../services/postService";
 import "../styles/components.css";
+
+// ShadCN Components
+import { Button } from "../components/ui/button";
+
+// Common Components
+import { PageHeader } from "../components/common/PageHeader";
+import { TabSwitcher } from "../components/common/TabSwitcher";
+import { AlertContainer } from "../components/common/AlertContainer";
+import { StatsGrid } from "../components/common/StatsGrid";
+
+// Domain Components
+import { UserFormFields } from "../components/domain/user/UserFormFields";
+import { PostFormFields } from "../components/domain/post/PostFormFields";
 
 type EntityType = "user" | "post";
 type Entity = User | Post;
@@ -259,254 +272,38 @@ export const ManagementPage: React.FC = () => {
   const stats = getStats();
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0f0f0" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-        <div style={{ marginBottom: "20px" }}>
-          <h1
-            style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              marginBottom: "5px",
-              color: "#333",
-            }}
-          >
-            관리 시스템
-          </h1>
-          <p style={{ color: "#666", fontSize: "14px" }}>
-            사용자와 게시글을 관리하세요
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#f0f0f0]">
+      <div className="max-w-[1200px] mx-auto p-5">
+        {/* 페이지 헤더 */}
+        <PageHeader />
 
-        <div
-          style={{
-            background: "white",
-            border: "1px solid #ddd",
-            padding: "10px",
-          }}
-        >
-          <div
-            style={{
-              marginBottom: "15px",
-              borderBottom: "2px solid #ccc",
-              paddingBottom: "5px",
-            }}
-          >
-            <button
-              onClick={() => setEntityType("post")}
-              style={{
-                padding: "8px 16px",
-                marginRight: "5px",
-                fontSize: "14px",
-                fontWeight: entityType === "post" ? "bold" : "normal",
-                border: "1px solid #999",
-                background: entityType === "post" ? "#1976d2" : "#f5f5f5",
-                color: entityType === "post" ? "white" : "#333",
-                cursor: "pointer",
-                borderRadius: "3px",
-              }}
-            >
-              게시글
-            </button>
-            <button
-              onClick={() => setEntityType("user")}
-              style={{
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: entityType === "user" ? "bold" : "normal",
-                border: "1px solid #999",
-                background: entityType === "user" ? "#1976d2" : "#f5f5f5",
-                color: entityType === "user" ? "white" : "#333",
-                cursor: "pointer",
-                borderRadius: "3px",
-              }}
-            >
-              사용자
-            </button>
-          </div>
+        {/* 페이지 본문 */}
+        <div className="bg-white border border-[#ddd] p-2.5">
+          {/* 탭 전환 */}
+          <TabSwitcher
+            activeTab={entityType}
+            onTabChange={(tab) => setEntityType(tab as EntityType)}
+          />
 
           <div>
             <div style={{ marginBottom: "15px", textAlign: "right" }}>
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
+              <Button onClick={() => setIsCreateModalOpen(true)}>
                 새로 만들기
               </Button>
             </div>
 
-            {showSuccessAlert && (
-              <div style={{ marginBottom: "10px" }}>
-                <Alert
-                  variant="success"
-                  title="성공"
-                  onClose={() => setShowSuccessAlert(false)}
-                >
-                  {alertMessage}
-                </Alert>
-              </div>
-            )}
+            {/* 알림 */}
+            <AlertContainer
+              showSuccess={showSuccessAlert}
+              showError={showErrorAlert}
+              successMessage={alertMessage}
+              errorMessage={errorMessage}
+              onCloseSuccess={() => setShowSuccessAlert(false)}
+              onCloseError={() => setShowErrorAlert(false)}
+            />
 
-            {showErrorAlert && (
-              <div style={{ marginBottom: "10px" }}>
-                <Alert
-                  variant="error"
-                  title="오류"
-                  onClose={() => setShowErrorAlert(false)}
-                >
-                  {errorMessage}
-                </Alert>
-              </div>
-            )}
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                gap: "10px",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  padding: "12px 15px",
-                  background: "#e3f2fd",
-                  border: "1px solid #90caf9",
-                  borderRadius: "3px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginBottom: "4px",
-                  }}
-                >
-                  전체
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#1976d2",
-                  }}
-                >
-                  {stats.total}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "12px 15px",
-                  background: "#e8f5e9",
-                  border: "1px solid #81c784",
-                  borderRadius: "3px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginBottom: "4px",
-                  }}
-                >
-                  {stats.stat1.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#388e3c",
-                  }}
-                >
-                  {stats.stat1.value}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "12px 15px",
-                  background: "#fff3e0",
-                  border: "1px solid #ffb74d",
-                  borderRadius: "3px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginBottom: "4px",
-                  }}
-                >
-                  {stats.stat2.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#f57c00",
-                  }}
-                >
-                  {stats.stat2.value}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "12px 15px",
-                  background: "#ffebee",
-                  border: "1px solid #e57373",
-                  borderRadius: "3px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginBottom: "4px",
-                  }}
-                >
-                  {stats.stat3.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#d32f2f",
-                  }}
-                >
-                  {stats.stat3.value}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "12px 15px",
-                  background: "#f5f5f5",
-                  border: "1px solid #bdbdbd",
-                  borderRadius: "3px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginBottom: "4px",
-                  }}
-                >
-                  {stats.stat4.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#424242",
-                  }}
-                >
-                  {stats.stat4.value}
-                </div>
-              </div>
-            </div>
+            {/* 통계 */}
+            <StatsGrid stats={stats} />
 
             <div
               style={{
@@ -545,7 +342,6 @@ export const ManagementPage: React.FC = () => {
           <>
             <Button
               variant="secondary"
-              size="md"
               onClick={() => {
                 setIsCreateModalOpen(false);
                 setFormData({});
@@ -553,132 +349,15 @@ export const ManagementPage: React.FC = () => {
             >
               취소
             </Button>
-            <Button variant="primary" size="md" onClick={handleCreate}>
-              생성
-            </Button>
+            <Button onClick={handleCreate}>생성</Button>
           </>
         }
       >
         <div>
           {entityType === "user" ? (
-            <>
-              <FormInput
-                name="username"
-                value={formData.username || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, username: value })
-                }
-                label="사용자명"
-                placeholder="사용자명을 입력하세요"
-                required
-                width="full"
-                fieldType="username"
-              />
-              <FormInput
-                name="email"
-                value={formData.email || ""}
-                onChange={(value) => setFormData({ ...formData, email: value })}
-                label="이메일"
-                placeholder="이메일을 입력하세요"
-                type="email"
-                required
-                width="full"
-                fieldType="email"
-              />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
-                <FormSelect
-                  name="role"
-                  value={formData.role || "user"}
-                  onChange={(value) =>
-                    setFormData({ ...formData, role: value })
-                  }
-                  options={[
-                    { value: "user", label: "사용자" },
-                    { value: "moderator", label: "운영자" },
-                    { value: "admin", label: "관리자" },
-                  ]}
-                  label="역할"
-                  size="md"
-                />
-                <FormSelect
-                  name="status"
-                  value={formData.status || "active"}
-                  onChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                  options={[
-                    { value: "active", label: "활성" },
-                    { value: "inactive", label: "비활성" },
-                    { value: "suspended", label: "정지" },
-                  ]}
-                  label="상태"
-                  size="md"
-                />
-              </div>
-            </>
+            <UserFormFields formData={formData} onChange={setFormData} />
           ) : (
-            <>
-              <FormInput
-                name="title"
-                value={formData.title || ""}
-                onChange={(value) => setFormData({ ...formData, title: value })}
-                label="제목"
-                placeholder="게시글 제목을 입력하세요"
-                required
-                width="full"
-                fieldType="postTitle"
-              />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
-                <FormInput
-                  name="author"
-                  value={formData.author || ""}
-                  onChange={(value) =>
-                    setFormData({ ...formData, author: value })
-                  }
-                  label="작성자"
-                  placeholder="작성자명"
-                  required
-                  width="full"
-                />
-                <FormSelect
-                  name="category"
-                  value={formData.category || ""}
-                  onChange={(value) =>
-                    setFormData({ ...formData, category: value })
-                  }
-                  options={[
-                    { value: "development", label: "Development" },
-                    { value: "design", label: "Design" },
-                    { value: "accessibility", label: "Accessibility" },
-                  ]}
-                  label="카테고리"
-                  placeholder="카테고리 선택"
-                  size="md"
-                />
-              </div>
-              <FormTextarea
-                name="content"
-                value={formData.content || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, content: value })
-                }
-                label="내용"
-                placeholder="게시글 내용을 입력하세요"
-                rows={6}
-              />
-            </>
+            <PostFormFields formData={formData} onChange={setFormData} />
           )}
         </div>
       </Modal>
@@ -697,7 +376,6 @@ export const ManagementPage: React.FC = () => {
           <>
             <Button
               variant="secondary"
-              size="md"
               onClick={() => {
                 setIsEditModalOpen(false);
                 setFormData({});
@@ -706,9 +384,7 @@ export const ManagementPage: React.FC = () => {
             >
               취소
             </Button>
-            <Button variant="primary" size="md" onClick={handleUpdate}>
-              수정 완료
-            </Button>
+            <Button onClick={handleUpdate}>수정 완료</Button>
           </>
         }
       >
@@ -722,124 +398,9 @@ export const ManagementPage: React.FC = () => {
           )}
 
           {entityType === "user" ? (
-            <>
-              <FormInput
-                name="username"
-                value={formData.username || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, username: value })
-                }
-                label="사용자명"
-                placeholder="사용자명을 입력하세요"
-                required
-                width="full"
-                fieldType="username"
-              />
-              <FormInput
-                name="email"
-                value={formData.email || ""}
-                onChange={(value) => setFormData({ ...formData, email: value })}
-                label="이메일"
-                placeholder="이메일을 입력하세요"
-                type="email"
-                required
-                width="full"
-                fieldType="email"
-              />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
-                <FormSelect
-                  name="role"
-                  value={formData.role || "user"}
-                  onChange={(value) =>
-                    setFormData({ ...formData, role: value })
-                  }
-                  options={[
-                    { value: "user", label: "사용자" },
-                    { value: "moderator", label: "운영자" },
-                    { value: "admin", label: "관리자" },
-                  ]}
-                  label="역할"
-                  size="md"
-                />
-                <FormSelect
-                  name="status"
-                  value={formData.status || "active"}
-                  onChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                  options={[
-                    { value: "active", label: "활성" },
-                    { value: "inactive", label: "비활성" },
-                    { value: "suspended", label: "정지" },
-                  ]}
-                  label="상태"
-                  size="md"
-                />
-              </div>
-            </>
+            <UserFormFields formData={formData} onChange={setFormData} />
           ) : (
-            <>
-              <FormInput
-                name="title"
-                value={formData.title || ""}
-                onChange={(value) => setFormData({ ...formData, title: value })}
-                label="제목"
-                placeholder="게시글 제목을 입력하세요"
-                required
-                width="full"
-                fieldType="postTitle"
-              />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
-                <FormInput
-                  name="author"
-                  value={formData.author || ""}
-                  onChange={(value) =>
-                    setFormData({ ...formData, author: value })
-                  }
-                  label="작성자"
-                  placeholder="작성자명"
-                  required
-                  width="full"
-                />
-                <FormSelect
-                  name="category"
-                  value={formData.category || ""}
-                  onChange={(value) =>
-                    setFormData({ ...formData, category: value })
-                  }
-                  options={[
-                    { value: "development", label: "Development" },
-                    { value: "design", label: "Design" },
-                    { value: "accessibility", label: "Accessibility" },
-                  ]}
-                  label="카테고리"
-                  placeholder="카테고리 선택"
-                  size="md"
-                />
-              </div>
-              <FormTextarea
-                name="content"
-                value={formData.content || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, content: value })
-                }
-                label="내용"
-                placeholder="게시글 내용을 입력하세요"
-                rows={6}
-              />
-            </>
+            <PostFormFields formData={formData} onChange={setFormData} />
           )}
         </div>
       </Modal>
