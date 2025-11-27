@@ -1,6 +1,7 @@
-import React from 'react';
-import { Alert } from '../organisms/Alert';
-
+import React from "react";
+// import { Alert } from "../organisms/Alert";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+import { CheckCircle, XCircle } from "lucide-react";
 interface AlertContainerProps {
   showSuccess: boolean;
   showError: boolean;
@@ -23,25 +24,21 @@ export const AlertContainer: React.FC<AlertContainerProps> = ({
   return (
     <>
       {showSuccess && (
-        <div style={{ marginBottom: "10px" }}>
-          <Alert
-            variant="success"
-            title="성공"
-            onClose={onCloseSuccess}
-          >
-            {successMessage}
+        <div className="mb-3">
+          <Alert variant="success" onClose={onCloseSuccess}>
+            <CheckCircle className="size-4" />
+            <AlertTitle>성공</AlertTitle>
+            <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         </div>
       )}
 
       {showError && (
-        <div style={{ marginBottom: "10px" }}>
-          <Alert
-            variant="error"
-            title="오류"
-            onClose={onCloseError}
-          >
-            {errorMessage}
+        <div className="mb-3">
+          <Alert variant="destructive" onClose={onCloseError}>
+            <XCircle className="size-4" />
+            <AlertTitle>오류</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         </div>
       )}
