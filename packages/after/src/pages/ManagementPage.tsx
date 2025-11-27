@@ -1,14 +1,28 @@
-import React, { useState, useEffect } from "react";
-// import { Button, Badge } from "../components/atoms";
-import { Table } from "../components/organisms";
-import { userService } from "../services/userService";
-import { postService } from "../services/postService";
+import React, { useState } from "react";
 import type { User } from "../services/userService";
 import type { Post } from "../services/postService";
 import "../styles/components.css";
 
+// Hooks
+import { useAlertState } from "../hooks/useAlertState";
+import { useModalState } from "../hooks/useModalState";
+import { useEntityStats } from "../hooks/useEntityStats";
+import { useManagementData } from "../hooks/useManagementData";
+
+// Utils
+import {
+  getRoleVariant,
+  getRoleText,
+  getUserStatusVariant,
+  getUserStatusText,
+  getPostStatusVariant,
+  getPostStatusText,
+  getCategoryVariant,
+} from "../utils/badgeHelpers";
+
 // ShadCN Components
 import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import {
   Dialog,
@@ -17,6 +31,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
 
 // Common Components
 import { PageHeader } from "../components/common/PageHeader";
@@ -31,144 +53,270 @@ import { PostFormFields } from "../components/domain/post/PostFormFields";
 type EntityType = "user" | "post";
 type Entity = User | Post;
 
+/**
+ * 사용자 테이블 컬럼 정의
+ * shadcn/ui Table 컴포넌트에 전달할 컬럼 구성
+ */
+const getUserColumns = (
+  onEdit: (item: User) => void,
+  onDelete: (id: number) => void
+) => [
+  { key: "id", header: "ID", width: "60px" },
+  { key: "username", header: "사용자명", width: "150px" },
+  { key: "email", header: "이메일" },
+  {
+    key: "role",
+    header: "역할",
+    width: "120px",
+    cell: (row: User) => (
+      <Badge variant={getRoleVariant(row.role)}>{getRoleText(row.role)}</Badge>
+    ),
+  },
+  {
+    key: "status",
+    header: "상태",
+    width: "120px",
+    cell: (row: User) => (
+      <Badge variant={getUserStatusVariant(row.status)}>
+        {getUserStatusText(row.status)}
+      </Badge>
+    ),
+  },
+  { key: "createdAt", header: "생성일", width: "120px" },
+  {
+    key: "lastLogin",
+    header: "마지막 로그인",
+    width: "140px",
+    cell: (row: User) => row.lastLogin || "-",
+  },
+  {
+    key: "actions",
+    header: "관리",
+    width: "200px",
+    cell: (row: User) => (
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => onEdit(row)}>
+          수정
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => onDelete(row.id)}
+        >
+          삭제
+        </Button>
+      </div>
+    ),
+  },
+];
+
+/**
+ * 게시글 테이블 컬럼 정의
+ * shadcn/ui Table 컴포넌트에 전달할 컬럼 구성
+ */
+const getPostColumns = (
+  onEdit: (item: Post) => void,
+  onDelete: (id: number) => void,
+  onPublish: (id: number) => void,
+  onArchive: (id: number) => void,
+  onRestore: (id: number) => void
+) => [
+  { key: "id", header: "ID", width: "60px" },
+  { key: "title", header: "제목" },
+  { key: "author", header: "작성자", width: "120px" },
+  {
+    key: "category",
+    header: "카테고리",
+    width: "140px",
+    cell: (row: Post) => (
+      <Badge variant={getCategoryVariant(row.category)}>{row.category}</Badge>
+    ),
+  },
+  {
+    key: "status",
+    header: "상태",
+    width: "120px",
+    cell: (row: Post) => (
+      <Badge variant={getPostStatusVariant(row.status)}>
+        {getPostStatusText(row.status)}
+      </Badge>
+    ),
+  },
+  {
+    key: "views",
+    header: "조회수",
+    width: "100px",
+    cell: (row: Post) => (row.views ?? 0).toLocaleString(),
+  },
+  { key: "createdAt", header: "작성일", width: "120px" },
+  {
+    key: "actions",
+    header: "관리",
+    width: "250px",
+    cell: (row: Post) => (
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => onEdit(row)}>
+          수정
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => onDelete(row.id)}
+        >
+          삭제
+        </Button>
+        {row.status === "draft" && (
+          <Button size="sm" onClick={() => onPublish(row.id)}>
+            게시
+          </Button>
+        )}
+        {row.status === "published" && (
+          <Button size="sm" onClick={() => onArchive(row.id)}>
+            보관
+          </Button>
+        )}
+        {row.status === "archived" && (
+          <Button size="sm" onClick={() => onRestore(row.id)}>
+            복원
+          </Button>
+        )}
+      </div>
+    ),
+  },
+];
+
+/**
+ * 사용자 및 게시글 관리 페이지 컴포넌트
+ *
+ * 사용자 관리와 게시글 관리를 하나의 페이지에서 처리합니다.
+ * 탭 전환을 통해 entityType을 변경하며, 각 타입에 맞는 CRUD 작업을 수행합니다.
+ *
+ * 데이터 흐름:
+ * 1. entityType 변경 → useManagementData에서 자동으로 데이터 로드
+ * 2. 사용자 액션 (생성/수정/삭제) → 핸들러 호출
+ * 3. 핸들러 → 커스텀 훅 함수 호출 → 서비스 레이어 호출
+ * 4. 성공/실패 → 알림 표시 (useAlertState)
+ * 5. 모달 관리 → useModalState
+ * 6. 통계 계산 → useEntityStats (자동)
+ */
 export const ManagementPage: React.FC = () => {
+  // 현재 관리 중인 엔티티 타입 (사용자 또는 게시글)
   const [entityType, setEntityType] = useState<EntityType>("post");
-  const [data, setData] = useState<Entity[]>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Entity | null>(null);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showErrorAlert, setShowErrorAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const [formData, setFormData] = useState<any>({});
+  /**
+   * 커스텀 훅: 데이터 관리
+   * entityType에 따라 자동으로 적절한 서비스를 호출하여
+   * 데이터 조회, 생성, 수정, 삭제를 처리합니다.
+   */
+  const { data, createItem, updateItem, deleteItem, changeStatus } =
+    useManagementData(entityType);
 
-  useEffect(() => {
-    loadData();
-    setFormData({});
-    setIsCreateModalOpen(false);
-    setIsEditModalOpen(false);
-    setSelectedItem(null);
-  }, [entityType]);
+  /**
+   * 커스텀 훅: 알림 상태 관리
+   * 성공 알림과 에러 알림을 독립적으로 관리합니다.
+   */
+  const {
+    showSuccessAlert,
+    showErrorAlert,
+    alertMessage,
+    errorMessage,
+    showSuccess,
+    showError,
+    closeSuccess,
+    closeError,
+  } = useAlertState();
 
-  const loadData = async () => {
-    try {
-      let result: Entity[];
+  /**
+   * 커스텀 훅: 모달 및 폼 상태 관리
+   * 생성/수정 모달의 열림/닫힘과 폼 데이터를 관리합니다.
+   */
+  const {
+    isCreateModalOpen,
+    isEditModalOpen,
+    formData,
+    selectedItem,
+    setFormData,
+    openCreateModal,
+    closeCreateModal,
+    openEditModal,
+    closeEditModal,
+  } = useModalState();
 
-      if (entityType === "user") {
-        result = await userService.getAll();
-      } else {
-        result = await postService.getAll();
-      }
+  /**
+   * 커스텀 훅: 통계 계산
+   * data와 entityType이 변경될 때마다 자동으로 통계를 재계산합니다.
+   */
+  const stats = useEntityStats(data, entityType);
 
-      setData(result);
-    } catch (error: any) {
-      setErrorMessage("데이터를 불러오는데 실패했습니다");
-      setShowErrorAlert(true);
-    }
-  };
-
+  /**
+   * 이벤트 핸들러: 새 항목 생성
+   * 1. createItem 호출하여 항목 생성
+   * 2. 성공 시 모달 닫고 성공 알림 표시
+   * 3. 실패 시 에러 알림 표시
+   */
   const handleCreate = async () => {
     try {
-      if (entityType === "user") {
-        await userService.create({
-          username: formData.username,
-          email: formData.email,
-          role: formData.role || "user",
-          status: formData.status || "active",
-        });
-      } else {
-        await postService.create({
-          title: formData.title,
-          content: formData.content || "",
-          author: formData.author,
-          category: formData.category,
-          status: formData.status || "draft",
-        });
-      }
-
-      await loadData();
-      setIsCreateModalOpen(false);
-      setFormData({});
-      setAlertMessage(
+      await createItem(formData);
+      closeCreateModal();
+      showSuccess(
         `${entityType === "user" ? "사용자" : "게시글"}가 생성되었습니다`
       );
-      setShowSuccessAlert(true);
     } catch (error: any) {
-      setErrorMessage(error.message || "생성에 실패했습니다");
-      setShowErrorAlert(true);
+      showError(error.message || "생성에 실패했습니다");
     }
   };
 
+  /**
+   * 이벤트 핸들러: 수정 모달 열기
+   * openEditModal이 선택한 항목의 데이터를 폼에 자동으로 로드합니다.
+   */
   const handleEdit = (item: Entity) => {
-    setSelectedItem(item);
-
-    if (entityType === "user") {
-      const user = item as User;
-      setFormData({
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      });
-    } else {
-      const post = item as Post;
-      setFormData({
-        title: post.title,
-        content: post.content,
-        author: post.author,
-        category: post.category,
-        status: post.status,
-      });
-    }
-
-    setIsEditModalOpen(true);
+    openEditModal(item, entityType);
   };
 
+  /**
+   * 이벤트 핸들러: 항목 수정
+   * 1. updateItem 호출하여 항목 수정
+   * 2. 성공 시 모달 닫고 성공 알림 표시
+   * 3. 실패 시 에러 알림 표시
+   */
   const handleUpdate = async () => {
     if (!selectedItem) return;
 
     try {
-      if (entityType === "user") {
-        await userService.update(selectedItem.id, formData);
-      } else {
-        await postService.update(selectedItem.id, formData);
-      }
-
-      await loadData();
-      setIsEditModalOpen(false);
-      setFormData({});
-      setSelectedItem(null);
-      setAlertMessage(
+      await updateItem(selectedItem.id, formData);
+      closeEditModal();
+      showSuccess(
         `${entityType === "user" ? "사용자" : "게시글"}가 수정되었습니다`
       );
-      setShowSuccessAlert(true);
     } catch (error: any) {
-      setErrorMessage(error.message || "수정에 실패했습니다");
-      setShowErrorAlert(true);
+      showError(error.message || "수정에 실패했습니다");
     }
   };
 
+  /**
+   * 이벤트 핸들러: 항목 삭제
+   * 1. 사용자 확인 (confirm)
+   * 2. deleteItem 호출하여 항목 삭제
+   * 3. 성공 시 성공 알림 표시
+   * 4. 실패 시 에러 알림 표시
+   */
   const handleDelete = async (id: number) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      if (entityType === "user") {
-        await userService.delete(id);
-      } else {
-        await postService.delete(id);
-      }
-
-      await loadData();
-      setAlertMessage("삭제되었습니다");
-      setShowSuccessAlert(true);
+      await deleteItem(id);
+      showSuccess("삭제되었습니다");
     } catch (error: any) {
-      setErrorMessage(error.message || "삭제에 실패했습니다");
-      setShowErrorAlert(true);
+      showError(error.message || "삭제에 실패했습니다");
     }
   };
 
+  /**
+   * 이벤트 핸들러: 게시글 상태 변경
+   * 게시(publish), 보관(archive), 복원(restore) 작업을 수행합니다.
+   * 게시글 타입일 때만 동작합니다.
+   */
   const handleStatusAction = async (
     id: number,
     action: "publish" | "archive" | "restore"
@@ -176,107 +324,29 @@ export const ManagementPage: React.FC = () => {
     if (entityType !== "post") return;
 
     try {
-      if (action === "publish") {
-        await postService.publish(id);
-      } else if (action === "archive") {
-        await postService.archive(id);
-      } else if (action === "restore") {
-        await postService.restore(id);
-      }
-
-      await loadData();
+      await changeStatus(id, action);
       const message =
         action === "publish" ? "게시" : action === "archive" ? "보관" : "복원";
-      setAlertMessage(`${message}되었습니다`);
-      setShowSuccessAlert(true);
+      showSuccess(`${message}되었습니다`);
     } catch (error: any) {
-      setErrorMessage(error.message || "작업에 실패했습니다");
-      setShowErrorAlert(true);
+      showError(error.message || "작업에 실패했습니다");
     }
   };
 
-  const getStats = () => {
-    if (entityType === "user") {
-      const users = data as User[];
-      return {
-        total: users.length,
-        stat1: {
-          label: "활성",
-          value: users.filter((u) => u.status === "active").length,
-          color: "#2e7d32",
-        },
-        stat2: {
-          label: "비활성",
-          value: users.filter((u) => u.status === "inactive").length,
-          color: "#ed6c02",
-        },
-        stat3: {
-          label: "정지",
-          value: users.filter((u) => u.status === "suspended").length,
-          color: "#d32f2f",
-        },
-        stat4: {
-          label: "관리자",
-          value: users.filter((u) => u.role === "admin").length,
-          color: "#1976d2",
-        },
-      };
-    } else {
-      const posts = data as Post[];
-      return {
-        total: posts.length,
-        stat1: {
-          label: "게시됨",
-          value: posts.filter((p) => p.status === "published").length,
-          color: "#2e7d32",
-        },
-        stat2: {
-          label: "임시저장",
-          value: posts.filter((p) => p.status === "draft").length,
-          color: "#ed6c02",
-        },
-        stat3: {
-          label: "보관됨",
-          value: posts.filter((p) => p.status === "archived").length,
-          color: "rgba(0, 0, 0, 0.6)",
-        },
-        stat4: {
-          label: "총 조회수",
-          value: posts.reduce((sum, p) => sum + p.views, 0),
-          color: "#1976d2",
-        },
-      };
-    }
-  };
-
-  // 🚨 Table 컴포넌트에 로직을 위임하여 간소화
-  const renderTableColumns = () => {
-    if (entityType === "user") {
-      return [
-        { key: "id", header: "ID", width: "60px" },
-        { key: "username", header: "사용자명", width: "150px" },
-        { key: "email", header: "이메일" },
-        { key: "role", header: "역할", width: "120px" },
-        { key: "status", header: "상태", width: "120px" },
-        { key: "createdAt", header: "생성일", width: "120px" },
-        { key: "lastLogin", header: "마지막 로그인", width: "140px" },
-        { key: "actions", header: "관리", width: "200px" },
-      ];
-    } else {
-      return [
-        { key: "id", header: "ID", width: "60px" },
-        { key: "title", header: "제목" },
-        { key: "author", header: "작성자", width: "120px" },
-        { key: "category", header: "카테고리", width: "140px" },
-        { key: "status", header: "상태", width: "120px" },
-        { key: "views", header: "조회수", width: "100px" },
-        { key: "createdAt", header: "작성일", width: "120px" },
-        { key: "actions", header: "관리", width: "250px" },
-      ];
-    }
-  };
-
-  const stats = getStats();
+  /**
+   * 테이블 컬럼 정의
+   * entityType에 따라 적절한 컬럼 배열을 반환합니다.
+   */
+  const columns =
+    entityType === "user"
+      ? getUserColumns(handleEdit, handleDelete)
+      : getPostColumns(
+          handleEdit,
+          handleDelete,
+          (id) => handleStatusAction(id, "publish"),
+          (id) => handleStatusAction(id, "archive"),
+          (id) => handleStatusAction(id, "restore")
+        );
 
   return (
     <div className="min-h-screen bg-[#f0f0f0]">
@@ -294,9 +364,7 @@ export const ManagementPage: React.FC = () => {
 
           <div>
             <div className="mb-4 text-right">
-              <Button onClick={() => setIsCreateModalOpen(true)}>
-                새로 만들기
-              </Button>
+              <Button onClick={openCreateModal}>새로 만들기</Button>
             </div>
 
             {/* 알림 */}
@@ -305,8 +373,8 @@ export const ManagementPage: React.FC = () => {
               showError={showErrorAlert}
               successMessage={alertMessage}
               errorMessage={errorMessage}
-              onCloseSuccess={() => setShowSuccessAlert(false)}
-              onCloseError={() => setShowErrorAlert(false)}
+              onCloseSuccess={closeSuccess}
+              onCloseError={closeError}
             />
 
             {/* 통계 */}
@@ -319,61 +387,43 @@ export const ManagementPage: React.FC = () => {
                 overflow: "auto",
               }}
             >
-              <Table
-                columns={renderTableColumns()}
-                data={data}
-                striped
-                hover
-                entityType={entityType}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onPublish={(id) => handleStatusAction(id, "publish")}
-                onArchive={(id) => handleStatusAction(id, "archive")}
-                onRestore={(id) => handleStatusAction(id, "restore")}
-              />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableHead
+                        key={column.key}
+                        style={{ width: column.width }}
+                      >
+                        {column.header}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.map((row: Entity) => (
+                    <TableRow key={row.id}>
+                      {columns.map((column) => (
+                        <TableCell key={column.key}>
+                          {column.cell
+                            ? column.cell(row as any)
+                            : (row as any)[column.key]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </div>
       </div>
 
-      {/* <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setFormData({});
-        }}
-        title={`새 ${entityType === "user" ? "사용자" : "게시글"} 만들기`}
-        size="large"
-        showFooter
-        footerContent={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsCreateModalOpen(false);
-                setFormData({});
-              }}
-            >
-              취소
-            </Button>
-            <Button onClick={handleCreate}>생성</Button>
-          </>
-        }
-      >
-        <div>
-          {entityType === "user" ? (
-            <UserFormFields formData={formData} onChange={setFormData} />
-          ) : (
-            <PostFormFields formData={formData} onChange={setFormData} />
-          )}
-        </div>
-      </Modal> */}
       <Dialog
         open={isCreateModalOpen}
         onOpenChange={(open) => {
-          setIsCreateModalOpen(open);
           if (!open) {
-            setFormData({});
+            closeCreateModal();
           }
         }}
       >
@@ -391,13 +441,7 @@ export const ManagementPage: React.FC = () => {
             )}
           </div>
           <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsCreateModalOpen(false);
-                setFormData({});
-              }}
-            >
+            <Button variant="secondary" onClick={closeCreateModal}>
               취소
             </Button>
             <Button onClick={handleCreate}>생성</Button>
@@ -405,57 +449,11 @@ export const ManagementPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setFormData({});
-          setSelectedItem(null);
-        }}
-        title={`${entityType === "user" ? "사용자" : "게시글"} 수정`}
-        size="large"
-        showFooter
-        footerContent={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsEditModalOpen(false);
-                setFormData({});
-                setSelectedItem(null);
-              }}
-            >
-              취소
-            </Button>
-            <Button onClick={handleUpdate}>수정 완료</Button>
-          </>
-        }
-      >
-        <div>
-          {selectedItem && (
-            <Alert variant="info">
-              <AlertDescription>
-                ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
-                {entityType === "post" &&
-                  ` | 조회수: ${(selectedItem as Post).views}`}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {entityType === "user" ? (
-            <UserFormFields formData={formData} onChange={setFormData} />
-          ) : (
-            <PostFormFields formData={formData} onChange={setFormData} />
-          )}
-        </div>
-      </Modal> */}
       <Dialog
         open={isEditModalOpen}
         onOpenChange={(open) => {
-          setIsEditModalOpen(open);
           if (!open) {
-            setFormData({});
-            setSelectedItem(null);
+            closeEditModal();
           }
         }}
       >
@@ -483,14 +481,7 @@ export const ManagementPage: React.FC = () => {
             )}
           </div>
           <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsEditModalOpen(false);
-                setFormData({});
-                setSelectedItem(null);
-              }}
-            >
+            <Button variant="secondary" onClick={closeEditModal}>
               취소
             </Button>
             <Button onClick={handleUpdate}>수정 완료</Button>
