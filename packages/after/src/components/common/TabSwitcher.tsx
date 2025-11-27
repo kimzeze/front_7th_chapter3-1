@@ -11,13 +11,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   onTabChange,
 }) => {
   return (
-    <div
-      style={{
-        marginBottom: "15px",
-        borderBottom: "2px solid #ccc",
-        paddingBottom: "5px",
-      }}
-    >
+    <div className="mb-4 border-b-2 border-border pb-1">
       <Button
         variant={activeTab === "post" ? "default" : "outline"}
         onClick={() => onTabChange("post")}

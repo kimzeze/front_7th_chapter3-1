@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import type { User } from "../services/userService";
 import type { Post } from "../services/postService";
-import "../styles/components.css";
 
 // Hooks
 import { useAlertState } from "../hooks/useAlertState";
@@ -349,13 +348,13 @@ export const ManagementPage: React.FC = () => {
         );
 
   return (
-    <div className="min-h-screen bg-[#f0f0f0]">
-      <div className="max-w-[1200px] mx-auto p-5">
+    <div className="min-h-screen bg-muted">
+      <div className="max-w-[1200px] mx-auto p-6">
         {/* 페이지 헤더 */}
         <PageHeader />
 
         {/* 페이지 본문 */}
-        <div className="bg-white border border-[#ddd] p-2.5">
+        <div className="bg-card border border-border p-4">
           {/* 탭 전환 */}
           <TabSwitcher
             activeTab={entityType}
@@ -380,13 +379,7 @@ export const ManagementPage: React.FC = () => {
             {/* 통계 */}
             <StatsGrid stats={stats} />
 
-            <div
-              style={{
-                border: "1px solid #ddd",
-                background: "white",
-                overflow: "auto",
-              }}
-            >
+            <div className="border border-border bg-card overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

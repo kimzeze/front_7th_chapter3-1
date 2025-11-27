@@ -24,7 +24,7 @@ export const AlertContainer: React.FC<AlertContainerProps> = ({
   return (
     <>
       {showSuccess && (
-        <div className="mb-3">
+        <div className="mb-4">
           <Alert variant="success" onClose={onCloseSuccess}>
             <CheckCircle className="size-4" />
             <AlertTitle>성공</AlertTitle>
@@ -34,7 +34,7 @@ export const AlertContainer: React.FC<AlertContainerProps> = ({
       )}
 
       {showError && (
-        <div className="mb-3">
+        <div className="mb-4">
           <Alert variant="destructive" onClose={onCloseError}>
             <XCircle className="size-4" />
             <AlertTitle>오류</AlertTitle>
