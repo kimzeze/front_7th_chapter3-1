@@ -125,7 +125,7 @@ export const ManagementPage: React.FC = () => {
     defaultValues: {
       title: "",
       author: "",
-      category: "development",
+      category: "",
       content: "",
       status: "draft",
     },
@@ -303,7 +303,7 @@ export const ManagementPage: React.FC = () => {
                     postForm.reset({
                       title: "",
                       author: "",
-                      category: "development",
+                      category: "",
                       content: "",
                       status: "draft",
                     });

@@ -17,7 +17,9 @@ export const postFormSchema = z.object({
     .min(1, "작성자를 입력하세요")
     .max(50, "작성자명은 50자 이하여야 합니다"),
 
-  category: z.enum(["development", "design", "accessibility"]),
+  category: z
+    .enum(["", "development", "design", "accessibility"])
+    .refine((val) => val !== "", { message: "카테고리를 선택하세요" }),
 
   content: z
     .string()
