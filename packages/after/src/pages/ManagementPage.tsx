@@ -14,10 +14,12 @@ import {
   getRoleText,
   getUserStatusVariant,
   getUserStatusText,
+} from "../components/domain/user/userBadgeHelpers";
+import {
   getPostStatusVariant,
   getPostStatusText,
   getCategoryVariant,
-} from "../utils/badgeHelpers";
+} from "../components/domain/post/postBadgeHelpers";
 
 // ShadCN Components
 import { Button } from "../components/ui/button";
