@@ -3,9 +3,12 @@ import { userService } from "../services/userService";
 import { postService } from "../services/postService";
 import type { User } from "../services/userService";
 import type { Post } from "../services/postService";
+import type { UserFormData } from "../validators/userSchema";
+import type { PostFormData } from "../validators/postSchema";
 
 type Entity = User | Post;
 type EntityType = "user" | "post";
+type FormData = UserFormData | PostFormData;
 
 /**
  * 데이터 CRUD 작업을 관리하는 커스텀 훅
@@ -62,24 +65,26 @@ export const useManagementData = (entityType: EntityType) => {
    * 새 항목을 생성합니다
    * 생성 후 자동으로 데이터를 다시 불러옵니다
    *
-   * @param {Object} formData - 생성할 항목의 폼 데이터
+   * @param {FormData} formData - 생성할 항목의 폼 데이터
    */
-  const createItem = async (formData: any) => {
+  const createItem = async (formData: FormData) => {
     // entityType에 따라 적절한 서비스 호출
     if (entityType === "user") {
+      const userData = formData as UserFormData;
       await userService.create({
-        username: formData.username,
-        email: formData.email,
-        role: formData.role || "user", // 기본값: "user"
-        status: formData.status || "active", // 기본값: "active"
+        username: userData.username,
+        email: userData.email,
+        role: userData.role || "user", // 기본값: "user"
+        status: userData.status || "active", // 기본값: "active"
       });
     } else {
+      const postData = formData as PostFormData;
       await postService.create({
-        title: formData.title,
-        content: formData.content || "",
-        author: formData.author,
-        category: formData.category,
-        status: formData.status || "draft", // 기본값: "draft"
+        title: postData.title,
+        content: postData.content || "",
+        author: postData.author,
+        category: postData.category,
+        status: postData.status || "draft", // 기본값: "draft"
       });
     }
     // 생성 후 데이터 새로고침
@@ -91,9 +96,9 @@ export const useManagementData = (entityType: EntityType) => {
    * 수정 후 자동으로 데이터를 다시 불러옵니다
    *
    * @param {number} id - 수정할 항목의 ID
-   * @param {Object} formData - 수정할 내용의 폼 데이터
+   * @param {FormData} formData - 수정할 내용의 폼 데이터
    */
-  const updateItem = async (id: number, formData: any) => {
+  const updateItem = async (id: number, formData: FormData) => {
     // entityType에 따라 적절한 서비스 호출
     if (entityType === "user") {
       await userService.update(id, formData);
