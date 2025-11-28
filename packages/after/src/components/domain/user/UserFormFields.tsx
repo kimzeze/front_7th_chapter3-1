@@ -1,5 +1,5 @@
 import React from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type { UserFormData } from "../../../validators/userSchema";
 
 // ShadCN Components
@@ -8,7 +8,7 @@ import { Label } from "../../ui/label";
 import { NativeSelect, NativeSelectOption } from "../../ui/native-select";
 
 interface UserFormFieldsProps {
-  form: UseFormReturn<UserFormData>;
+  form: ReturnType<typeof useForm<UserFormData>>;
 }
 
 /**

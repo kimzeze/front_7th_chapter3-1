@@ -1,5 +1,5 @@
 import React from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type { PostFormData } from "../../../validators/postSchema";
 
 // ShadCN Components
@@ -9,7 +9,7 @@ import { NativeSelect, NativeSelectOption } from "../../ui/native-select";
 import { Textarea } from "../../ui/textarea";
 
 interface PostFormFieldsProps {
-  form: UseFormReturn<PostFormData>;
+  form: ReturnType<typeof useForm<PostFormData>>;
 }
 
 /**
