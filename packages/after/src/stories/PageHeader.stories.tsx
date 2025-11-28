@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PageHeader } from "../components/common/PageHeader";
+import { PageHeader } from "../components/shared/PageHeader";
 
 const meta = {
-  title: "Common/PageHeader",
+  title: "Shared/PageHeader",
   component: PageHeader,
   parameters: {
     layout: "padded",

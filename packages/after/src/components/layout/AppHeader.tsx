@@ -1,7 +1,7 @@
 import React from "react";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle } from "../shared/ThemeToggle";
 
-export const Header: React.FC = () => {
+export const AppHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">

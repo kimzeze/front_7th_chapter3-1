@@ -39,15 +39,15 @@ import {
   TableRow,
 } from "../components/ui/table";
 
-// Common Components
-import { PageHeader } from "../components/common/PageHeader";
-import { TabSwitcher } from "../components/common/TabSwitcher";
-import { AlertContainer } from "../components/common/AlertContainer";
-import { StatsGrid } from "../components/common/StatsGrid";
+// Shared Components
+import { PageHeader } from "../components/shared/PageHeader";
+import { AlertContainer } from "../components/shared/AlertContainer";
 
 // Domain Components
 import { UserFormFields } from "../components/domain/user/UserFormFields";
 import { PostFormFields } from "../components/domain/post/PostFormFields";
+import { ManagementTabs } from "../components/domain/management/ManagementTabs";
+import { ManagementStats } from "../components/domain/management/ManagementStats";
 
 type EntityType = "user" | "post";
 type Entity = User | Post;
@@ -359,7 +359,7 @@ export const ManagementPage: React.FC = () => {
         {/* 페이지 본문 */}
         <div className="bg-card border border-border p-4">
           {/* 탭 전환 */}
-          <TabSwitcher
+          <ManagementTabs
             activeTab={entityType}
             onTabChange={(tab) => setEntityType(tab as EntityType)}
           />
@@ -380,7 +380,7 @@ export const ManagementPage: React.FC = () => {
             />
 
             {/* 통계 */}
-            <StatsGrid stats={stats} />
+            <ManagementStats stats={stats} />
 
             <div className="border border-border bg-card overflow-auto">
               <Table>

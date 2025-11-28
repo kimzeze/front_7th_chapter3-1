@@ -1,12 +1,12 @@
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
-interface TabSwitcherProps {
+interface ManagementTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export const TabSwitcher: React.FC<TabSwitcherProps> = ({
+export const ManagementTabs: React.FC<ManagementTabsProps> = ({
   activeTab,
   onTabChange,
 }) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent } from "../../ui/card";
 
 interface Stat {
   label: string;
@@ -15,11 +15,11 @@ interface Stats {
   stat4: Stat;
 }
 
-interface StatsGridProps {
+interface ManagementStatsProps {
   stats: Stats;
 }
 
-export const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => {
+export const ManagementStats: React.FC<ManagementStatsProps> = ({ stats }) => {
   // stats를 배열로 변환하여 map으로 렌더링
   const statsArray: Stat[] = [
     { label: "전체", value: stats.total, color: "hsl(var(--primary))" },
