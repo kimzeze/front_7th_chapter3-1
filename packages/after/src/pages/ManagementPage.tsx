@@ -1,6 +1,13 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { User } from "../services/userService";
 import type { Post } from "../services/postService";
+import {
+  userFormSchema,
+  type UserFormData,
+} from "../validators/userSchema";
+import { postFormSchema, type PostFormData } from "../validators/postSchema";
 
 // Hooks
 import { useAlertState } from "../hooks/useAlertState";
@@ -228,20 +235,45 @@ export const ManagementPage: React.FC = () => {
   } = useAlertState();
 
   /**
-   * 커스텀 훅: 모달 및 폼 상태 관리
-   * 생성/수정 모달의 열림/닫힘과 폼 데이터를 관리합니다.
+   * 커스텀 훅: 모달 상태 관리
+   * 생성/수정 모달의 열림/닫힘을 관리합니다.
    */
   const {
     isCreateModalOpen,
     isEditModalOpen,
-    formData,
     selectedItem,
-    setFormData,
     openCreateModal,
     closeCreateModal,
     openEditModal,
     closeEditModal,
   } = useModalState();
+
+  /**
+   * React Hook Form: User 폼 관리
+   */
+  const userForm = useForm<UserFormData>({
+    resolver: zodResolver(userFormSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      role: "user",
+      status: "active",
+    },
+  });
+
+  /**
+   * React Hook Form: Post 폼 관리
+   */
+  const postForm = useForm<PostFormData>({
+    resolver: zodResolver(postFormSchema),
+    defaultValues: {
+      title: "",
+      author: "",
+      category: "development",
+      content: "",
+      status: "draft",
+    },
+  });
 
   /**
    * 커스텀 훅: 통계 계산
@@ -251,47 +283,77 @@ export const ManagementPage: React.FC = () => {
 
   /**
    * 이벤트 핸들러: 새 항목 생성
-   * 1. createItem 호출하여 항목 생성
-   * 2. 성공 시 모달 닫고 성공 알림 표시
-   * 3. 실패 시 에러 알림 표시
+   * 1. 폼 검증 (react-hook-form + Zod)
+   * 2. createItem 호출하여 항목 생성
+   * 3. 성공 시 모달 닫고 폼 초기화, 성공 알림 표시
+   * 4. 실패 시 에러 알림 표시
    */
-  const handleCreate = async () => {
+  const handleCreate = async (data: UserFormData | PostFormData) => {
     try {
-      await createItem(formData);
+      await createItem(data);
       closeCreateModal();
+      const form = entityType === "user" ? userForm : postForm;
+      form.reset();
       showSuccess(
         `${entityType === "user" ? "사용자" : "게시글"}가 생성되었습니다`
       );
-    } catch (error: any) {
-      showError(error.message || "생성에 실패했습니다");
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "생성에 실패했습니다"
+      );
     }
   };
 
   /**
    * 이벤트 핸들러: 수정 모달 열기
-   * openEditModal이 선택한 항목의 데이터를 폼에 자동으로 로드합니다.
+   * 선택한 항목의 데이터를 폼에 로드합니다.
    */
   const handleEdit = (item: Entity) => {
-    openEditModal(item, entityType);
+    openEditModal(item);
+
+    // 폼 데이터 초기화
+    if (entityType === "user") {
+      const user = item as User;
+      userForm.reset({
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      });
+    } else {
+      const post = item as Post;
+      postForm.reset({
+        title: post.title,
+        author: post.author,
+        category: post.category,
+        content: post.content || "",
+        status: post.status,
+      });
+    }
   };
 
   /**
    * 이벤트 핸들러: 항목 수정
-   * 1. updateItem 호출하여 항목 수정
-   * 2. 성공 시 모달 닫고 성공 알림 표시
-   * 3. 실패 시 에러 알림 표시
+   * 1. 폼 검증 (react-hook-form + Zod)
+   * 2. updateItem 호출하여 항목 수정
+   * 3. 성공 시 모달 닫고 폼 초기화, 성공 알림 표시
+   * 4. 실패 시 에러 알림 표시
    */
-  const handleUpdate = async () => {
+  const handleUpdate = async (data: UserFormData | PostFormData) => {
     if (!selectedItem) return;
 
     try {
-      await updateItem(selectedItem.id, formData);
+      await updateItem(selectedItem.id, data);
       closeEditModal();
+      const form = entityType === "user" ? userForm : postForm;
+      form.reset();
       showSuccess(
         `${entityType === "user" ? "사용자" : "게시글"}가 수정되었습니다`
       );
-    } catch (error: any) {
-      showError(error.message || "수정에 실패했습니다");
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "수정에 실패했습니다"
+      );
     }
   };
 
@@ -308,8 +370,10 @@ export const ManagementPage: React.FC = () => {
     try {
       await deleteItem(id);
       showSuccess("삭제되었습니다");
-    } catch (error: any) {
-      showError(error.message || "삭제에 실패했습니다");
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "삭제에 실패했습니다"
+      );
     }
   };
 
@@ -329,8 +393,10 @@ export const ManagementPage: React.FC = () => {
       const message =
         action === "publish" ? "게시" : action === "archive" ? "보관" : "복원";
       showSuccess(`${message}되었습니다`);
-    } catch (error: any) {
-      showError(error.message || "작업에 실패했습니다");
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "작업에 실패했습니다"
+      );
     }
   };
 
@@ -399,13 +465,13 @@ export const ManagementPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.map((row: Entity) => (
+                  {data.map((row) => (
                     <TableRow key={row.id}>
                       {columns.map((column) => (
                         <TableCell key={column.key}>
                           {column.cell
-                            ? column.cell(row as any)
-                            : (row as any)[column.key]}
+                            ? column.cell(row)
+                            : row[column.key as keyof typeof row]}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -433,16 +499,24 @@ export const ManagementPage: React.FC = () => {
           </DialogHeader>
           <div>
             {entityType === "user" ? (
-              <UserFormFields formData={formData} onChange={setFormData} />
+              <UserFormFields form={userForm} />
             ) : (
-              <PostFormFields formData={formData} onChange={setFormData} />
+              <PostFormFields form={postForm} />
             )}
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={closeCreateModal}>
               취소
             </Button>
-            <Button onClick={handleCreate}>생성</Button>
+            <Button
+              onClick={
+                entityType === "user"
+                  ? userForm.handleSubmit(handleCreate)
+                  : postForm.handleSubmit(handleCreate)
+              }
+            >
+              생성
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -473,16 +547,24 @@ export const ManagementPage: React.FC = () => {
             )}
 
             {entityType === "user" ? (
-              <UserFormFields formData={formData} onChange={setFormData} />
+              <UserFormFields form={userForm} />
             ) : (
-              <PostFormFields formData={formData} onChange={setFormData} />
+              <PostFormFields form={postForm} />
             )}
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={closeEditModal}>
               취소
             </Button>
-            <Button onClick={handleUpdate}>수정 완료</Button>
+            <Button
+              onClick={
+                entityType === "user"
+                  ? userForm.handleSubmit(handleUpdate)
+                  : postForm.handleSubmit(handleUpdate)
+              }
+            >
+              수정 완료
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
