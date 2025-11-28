@@ -1,4 +1,5 @@
 import React from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export const Header: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ export const Header: React.FC = () => {
 
         {/* User Info */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <div className="text-right">
             <div className="text-sm font-semibold text-foreground">
               Demo User
