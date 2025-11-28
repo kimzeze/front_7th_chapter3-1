@@ -290,7 +290,15 @@ export const ManagementPage: React.FC = () => {
 
           <div>
             <div className="mb-4 text-right">
-              <Button onClick={openCreateModal}>새로 만들기</Button>
+              <Button
+                onClick={() => {
+                  const form = entityType === "user" ? userForm : postForm;
+                  form.reset();
+                  openCreateModal();
+                }}
+              >
+                새로 만들기
+              </Button>
             </div>
 
             {/* 알림 */}
@@ -347,7 +355,10 @@ export const ManagementPage: React.FC = () => {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[900px]">
+        <DialogContent
+          className="sm:max-w-[900px]"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>
               새 {entityType === "user" ? "사용자" : "게시글"} 만들기
@@ -385,7 +396,10 @@ export const ManagementPage: React.FC = () => {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[900px]">
+        <DialogContent
+          className="sm:max-w-[900px]"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>
               {entityType === "user" ? "사용자" : "게시글"} 수정
