@@ -351,7 +351,10 @@ export const ManagementPage: React.FC = () => {
     <div className="min-h-screen bg-muted">
       <div className="max-w-[1200px] mx-auto p-6">
         {/* 페이지 헤더 */}
-        <PageHeader />
+        <PageHeader
+          title="관리 시스템"
+          description="사용자와 게시글을 관리하세요"
+        />
 
         {/* 페이지 본문 */}
         <div className="bg-card border border-border p-4">
