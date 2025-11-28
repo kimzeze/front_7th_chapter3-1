@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import type { PostFormData } from "../../../validators/postSchema";
+import type { PostFormData } from "@/validators";
 
 // ShadCN Components
 import { Label } from "../../ui/label";

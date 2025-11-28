@@ -21,13 +21,9 @@ export const userFormSchema = z.object({
     .min(1, "이메일을 입력하세요")
     .email("유효한 이메일 주소를 입력하세요"),
 
-  role: z.enum(["user", "moderator", "admin"], {
-    required_error: "역할을 선택하세요",
-  }),
+  role: z.enum(["user", "moderator", "admin"]),
 
-  status: z.enum(["active", "inactive", "suspended"], {
-    required_error: "상태를 선택하세요",
-  }),
+  status: z.enum(["active", "inactive", "suspended"]),
 });
 
 /**

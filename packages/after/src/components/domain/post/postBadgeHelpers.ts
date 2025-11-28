@@ -1,4 +1,4 @@
-import type { Post } from "../../../services/postService";
+import type { Post } from "@/services";
 
 /**
  * Badge variant 타입

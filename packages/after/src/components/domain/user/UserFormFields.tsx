@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import type { UserFormData } from "../../../validators/userSchema";
+import type { UserFormData } from "@/validators";
 
 // ShadCN Components
 import { Input } from "../../ui/input";

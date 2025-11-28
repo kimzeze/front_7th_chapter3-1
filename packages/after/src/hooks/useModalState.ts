@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { User } from "../services/userService";
-import type { Post } from "../services/postService";
+import type { User, Post } from "@/services";
 
 type Entity = User | Post;
 

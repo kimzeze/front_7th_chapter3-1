@@ -17,19 +17,14 @@ export const postFormSchema = z.object({
     .min(1, "작성자를 입력하세요")
     .max(50, "작성자명은 50자 이하여야 합니다"),
 
-  category: z.enum(["development", "design", "accessibility"], {
-    required_error: "카테고리를 선택하세요",
-  }),
+  category: z.enum(["development", "design", "accessibility"]),
 
   content: z
     .string()
     .max(1000, "내용은 1000자 이하여야 합니다")
     .optional(),
 
-  status: z
-    .enum(["published", "draft", "archived"])
-    .optional()
-    .default("draft"),
+  status: z.enum(["published", "draft", "archived"]),
 });
 
 /**

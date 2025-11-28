@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User } from "../services/userService";
-import type { Post } from "../services/postService";
+import type { User, Post } from "@/services";
 import {
   userFormSchema,
   type UserFormData,
-} from "../validators/userSchema";
-import { postFormSchema, type PostFormData } from "../validators/postSchema";
+  postFormSchema,
+  type PostFormData,
+} from "@/validators";
 
 // Hooks
-import { useAlertState } from "../hooks/useAlertState";
-import { useModalState } from "../hooks/useModalState";
-import { useEntityStats } from "../hooks/useEntityStats";
-import { useManagementData } from "../hooks/useManagementData";
+import { useAlertState } from "@/hooks/useAlertState";
+import { useModalState } from "@/hooks/useModalState";
+import { useEntityStats } from "@/hooks/useEntityStats";
+import { useManagementData } from "@/hooks/useManagementData";
 
 // Utils
 import {
@@ -21,24 +21,24 @@ import {
   getRoleText,
   getUserStatusVariant,
   getUserStatusText,
-} from "../components/domain/user/userBadgeHelpers";
+} from "@/components/domain/user";
 import {
   getPostStatusVariant,
   getPostStatusText,
   getCategoryVariant,
-} from "../components/domain/post/postBadgeHelpers";
+} from "@/components/domain/post";
 
 // ShadCN Components
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Alert, AlertDescription } from "../components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "../components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -46,17 +46,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from "@/components/ui/table";
 
 // Shared Components
-import { PageHeader } from "../components/shared/PageHeader";
-import { AlertContainer } from "../components/shared/AlertContainer";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { AlertContainer } from "@/components/shared/AlertContainer";
 
 // Domain Components
-import { UserFormFields } from "../components/domain/user/UserFormFields";
-import { PostFormFields } from "../components/domain/post/PostFormFields";
-import { ManagementTabs } from "../components/domain/management/ManagementTabs";
-import { ManagementStats } from "../components/domain/management/ManagementStats";
+import { UserFormFields } from "@/components/domain/user";
+import { PostFormFields } from "@/components/domain/post";
+import { ManagementTabs } from "@/components/domain/management/ManagementTabs";
+import { ManagementStats } from "@/components/domain/management/ManagementStats";
 
 type EntityType = "user" | "post";
 type Entity = User | Post;
@@ -325,7 +325,7 @@ export const ManagementPage: React.FC = () => {
       postForm.reset({
         title: post.title,
         author: post.author,
-        category: post.category,
+        category: post.category as "development" | "design" | "accessibility",
         content: post.content || "",
         status: post.status,
       });
@@ -470,7 +470,7 @@ export const ManagementPage: React.FC = () => {
                       {columns.map((column) => (
                         <TableCell key={column.key}>
                           {column.cell
-                            ? column.cell(row)
+                            ? column.cell(row as any)
                             : row[column.key as keyof typeof row]}
                         </TableCell>
                       ))}

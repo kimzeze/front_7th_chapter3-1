@@ -1,4 +1,4 @@
-import type { User } from "../../../services/userService";
+import type { User } from "@/services";
 
 /**
  * Badge variant 타입

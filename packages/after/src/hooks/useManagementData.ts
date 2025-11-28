@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
-import { userService } from "../services/userService";
-import { postService } from "../services/postService";
-import type { User } from "../services/userService";
-import type { Post } from "../services/postService";
-import type { UserFormData } from "../validators/userSchema";
-import type { PostFormData } from "../validators/postSchema";
+import { userService, postService, type User, type Post } from "@/services";
+import type { UserFormData, PostFormData } from "@/validators";
 
 type Entity = User | Post;
 type EntityType = "user" | "post";
@@ -101,9 +97,9 @@ export const useManagementData = (entityType: EntityType) => {
   const updateItem = async (id: number, formData: FormData) => {
     // entityType에 따라 적절한 서비스 호출
     if (entityType === "user") {
-      await userService.update(id, formData);
+      await userService.update(id, formData as UserFormData);
     } else {
-      await postService.update(id, formData);
+      await postService.update(id, formData as PostFormData);
     }
     // 수정 후 데이터 새로고침
     await loadData();
@@ -152,6 +148,7 @@ export const useManagementData = (entityType: EntityType) => {
   // entityType이 변경될 때마다 데이터 다시 불러오기
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityType]);
 
   return {
