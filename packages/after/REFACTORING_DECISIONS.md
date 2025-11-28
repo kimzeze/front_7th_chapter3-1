@@ -127,6 +127,117 @@ color: "hsl(var(--chart-4))"
 - 타입 캐스팅(`as`)은 완벽하지 않지만, entityType이 보장되는 상황에서는 안전
 - 더 복잡한 타입 가드를 쓸 수도 있지만, 이 정도면 충분히 안전하고 코드도 깔끔함
 
+## 6. Import 패턴 개선
+
+### 변경 사항
+```typescript
+// Before
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { createUser } from "../../services/userService"
+
+// After
+import { Button, Badge, Dialog, Alert } from "@/components/ui"
+import { createUser } from "@/services"
+```
+
+### Barrel Exports 도입
+- `validators/index.ts`: Zod 스키마와 타입 통합 export
+- `services/index.ts`: API 서비스 함수들 통합 export
+- `components/ui/index.ts`: shadcn/ui 컴포넌트들 통합 export
+- `components/domain/*/index.ts`: 도메인별 컴포넌트 및 헬퍼 통합 export
+
+### 절대 경로 활용
+- 모든 상대 경로(`../../`)를 절대 경로(`@/`)로 변경
+- vite.config.ts에 이미 설정된 `@` 별칭 활용
+
+### 결정 이유
+
+**일관성**
+- shadcn/ui는 개별 import를 권장하지만, 우리 코드베이스 전체의 일관성을 위해 barrel export 적용
+- 모든 폴더에서 동일한 import 패턴 사용
+
+**가독성**
+- import 구문이 간결해지고 파일 구조가 명확해짐
+- 긴 상대 경로(`../../services/userService`)보다 절대 경로(`@/services`)가 직관적
+
+**유지보수성**
+- 파일 위치 변경 시 상대 경로는 모두 수정해야 하지만 절대 경로는 변경 불필요
+- export 위치만 barrel file에서 관리하면 됨
+
+## 7. Colocation 원칙 적용
+
+### 변경 사항
+```
+hooks/
+├── useManagementData.ts (삭제)
+├── useEntityStats.ts (삭제)
+└── useModalState.ts (삭제)
+
+pages/ManagementPage/
+├── ManagementPage.tsx
+├── useManagementData.ts (이동)
+├── useEntityStats.ts (이동)
+├── useModalState.ts (이동)
+└── columns.tsx (신규)
+```
+
+### 결정 이유
+
+**Kent C. Dodds의 Colocation 원칙**
+- "코드는 사용되는 곳과 가까이 위치해야 한다"
+- 세 개의 훅은 ManagementPage에서만 사용됨
+- 전역 hooks/ 폴더에 두면 "어디서든 쓸 수 있는 훅"처럼 보이지만 실제로는 그렇지 않음
+
+**파일 크기 감소**
+- ManagementPage.tsx가 573줄 → 430줄로 감소 (25% 감소)
+- columns 정의를 별도 파일로 분리하여 가독성 향상
+
+**명확한 의존성**
+- ManagementPage와 관련된 모든 코드가 한 폴더에 모임
+- 다른 개발자가 코드를 이해할 때 ManagementPage/ 폴더만 보면 됨
+
+**index.tsx를 사용하지 않은 이유**
+- 일부 아키텍처에서는 `pages/ManagementPage/index.tsx`를 선호하지만
+- `ManagementPage.tsx`가 파일 탐색기에서 더 명확하게 보임
+- 여러 index.tsx가 탭에 열리면 구분이 어려움
+
+## 8. UI 컴포넌트 개선
+
+### 변경 사항
+
+**Dialog 닫기 버튼**
+```typescript
+// cursor-pointer 추가
+className="... cursor-pointer ..."
+```
+
+**Alert 닫기 버튼**
+```typescript
+// cursor-pointer 추가
+className="... cursor-pointer ..."
+```
+
+**NativeSelect 너비**
+```typescript
+// Before
+className="... w-fit ..."
+
+// After
+className="... w-full ..."
+```
+
+### 결정 이유
+
+**사용자 경험 개선**
+- 닫기 버튼에 cursor-pointer 추가하여 클릭 가능함을 명확히 표시
+- 버튼 위에 마우스를 올렸을 때 포인터 커서가 표시되어 직관적
+
+**폼 레이아웃 개선**
+- Select 컴포넌트가 grid-cols-2에서 각각 50%씩 차지하도록 w-full 적용
+- 기존 w-fit은 텍스트 너비만큼만 차지하여 시각적으로 어색했음
+- 일관된 너비로 폼이 더 정돈되어 보임
+
 ## 결론
 
 모든 변경은 **명확성**, **유지보수성**, **타입 안전성**을 높이는 방향으로 진행했다.
