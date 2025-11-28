@@ -8,16 +8,24 @@ interface Stat {
   color: string;
 }
 
-interface Stats {
+interface UserStats {
   total: number;
-  stat1: Stat;
-  stat2: Stat;
-  stat3: Stat;
-  stat4: Stat;
+  active: Stat;
+  inactive: Stat;
+  suspended: Stat;
+  admin: Stat;
+}
+
+interface PostStats {
+  total: number;
+  published: Stat;
+  draft: Stat;
+  archived: Stat;
+  totalViews: Stat;
 }
 
 interface ManagementStatsProps {
-  stats: Stats;
+  stats: UserStats | PostStats;
 }
 
 const statCardVariants = cva(
@@ -58,14 +66,26 @@ const statTextVariants = cva(
 
 type StatVariant = VariantProps<typeof statCardVariants>["variant"];
 
+const isUserStats = (stats: UserStats | PostStats): stats is UserStats => {
+  return 'active' in stats;
+};
+
 export const ManagementStats: React.FC<ManagementStatsProps> = ({ stats }) => {
-  const statsArray: (Stat & { variant: StatVariant })[] = [
-    { label: "전체", value: stats.total, color: "", variant: "primary" },
-    { ...stats.stat1, variant: "success" },
-    { ...stats.stat2, variant: "warning" },
-    { ...stats.stat3, variant: "danger" },
-    { ...stats.stat4, variant: "info" },
-  ];
+  const statsArray: (Stat & { variant: StatVariant })[] = isUserStats(stats)
+    ? [
+        { label: "전체", value: stats.total, color: "", variant: "primary" },
+        { ...stats.active, variant: "success" },
+        { ...stats.inactive, variant: "warning" },
+        { ...stats.suspended, variant: "danger" },
+        { ...stats.admin, variant: "info" },
+      ]
+    : [
+        { label: "전체", value: stats.total, color: "", variant: "primary" },
+        { ...stats.published, variant: "success" },
+        { ...stats.draft, variant: "warning" },
+        { ...stats.archived, variant: "danger" },
+        { ...stats.totalViews, variant: "info" },
+      ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
