@@ -60,7 +60,9 @@ export const PostFormFields: React.FC<PostFormFieldsProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">카테고리</Label>
+          <Label required htmlFor="category">
+            카테고리
+          </Label>
           <NativeSelect
             id="category"
             aria-invalid={!!errors.category}

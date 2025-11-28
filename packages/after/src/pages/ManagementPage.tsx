@@ -372,6 +372,7 @@ export const ManagementPage: React.FC = () => {
         <DialogContent
           className="sm:max-w-[900px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          aria-describedby={undefined}
         >
           <DialogHeader>
             <DialogTitle>
@@ -413,6 +414,7 @@ export const ManagementPage: React.FC = () => {
         <DialogContent
           className="sm:max-w-[900px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          aria-describedby="edit-dialog-description"
         >
           <DialogHeader>
             <DialogTitle>
@@ -421,7 +423,7 @@ export const ManagementPage: React.FC = () => {
           </DialogHeader>
           <div>
             {selectedItem && (
-              <Alert variant="info">
+              <Alert variant="info" id="edit-dialog-description">
                 <AlertDescription>
                   ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
                   {entityType === "post" &&
