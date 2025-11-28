@@ -40,7 +40,7 @@ function Alert({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 opacity-70 hover:opacity-100 transition-opacity"
+          className="absolute right-3 top-3 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
           aria-label="닫기"
         >
           <svg
