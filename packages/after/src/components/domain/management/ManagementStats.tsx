@@ -20,7 +20,6 @@ interface ManagementStatsProps {
 }
 
 export const ManagementStats: React.FC<ManagementStatsProps> = ({ stats }) => {
-  // stats를 배열로 변환하여 map으로 렌더링
   const statsArray: Stat[] = [
     { label: "전체", value: stats.total, color: "hsl(var(--primary))" },
     stats.stat1,
