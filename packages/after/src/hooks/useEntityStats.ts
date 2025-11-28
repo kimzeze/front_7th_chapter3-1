@@ -11,6 +11,8 @@ type EntityType = "user" | "post";
  * useMemo를 사용하여 data나 entityType이 변경될 때만 재계산됩니다.
  * 사용자 관리와 게시글 관리에서 서로 다른 통계를 제공합니다.
  *
+ * Design Token을 사용하여 테마에 따라 자동으로 색상이 변경됩니다.
+ *
  * @param {Entity[]} data - 통계를 계산할 데이터 배열 (User[] 또는 Post[])
  * @param {EntityType} entityType - 엔티티 타입 ("user" 또는 "post")
  *
@@ -23,10 +25,10 @@ type EntityType = "user" | "post";
  *
  * @example
  * const stats = useEntityStats(users, "user");
- * // { total: 100, stat1: { label: "활성", value: 80, color: "#2e7d32" }, ... }
+ * // { total: 100, stat1: { label: "활성", value: 80, color: "hsl(var(--chart-4))" }, ... }
  *
  * const stats = useEntityStats(posts, "post");
- * // { total: 50, stat1: { label: "게시됨", value: 30, color: "#2e7d32" }, ... }
+ * // { total: 50, stat1: { label: "게시됨", value: 30, color: "hsl(var(--chart-4))" }, ... }
  */
 export const useEntityStats = (data: Entity[], entityType: EntityType) => {
   return useMemo(() => {
@@ -39,23 +41,23 @@ export const useEntityStats = (data: Entity[], entityType: EntityType) => {
         stat1: {
           label: "활성",
           value: users.filter((u) => u.status === "active").length,
-          color: "#2e7d32", // 녹색
+          color: "hsl(var(--chart-4))", // 녹색 계열
         },
         stat2: {
           label: "비활성",
           value: users.filter((u) => u.status === "inactive").length,
-          color: "#ed6c02", // 주황색
+          color: "hsl(var(--chart-5))", // 주황색 계열
         },
         stat3: {
           label: "정지",
           value: users.filter((u) => u.status === "suspended").length,
-          color: "#d32f2f", // 빨간색
+          color: "hsl(var(--destructive))", // 빨간색
         },
         // 역할별 통계
         stat4: {
           label: "관리자",
           value: users.filter((u) => u.role === "admin").length,
-          color: "#1976d2", // 파란색
+          color: "hsl(var(--chart-3))", // 파란색 계열
         },
       };
     }
@@ -68,23 +70,23 @@ export const useEntityStats = (data: Entity[], entityType: EntityType) => {
         stat1: {
           label: "게시됨",
           value: posts.filter((p) => p.status === "published").length,
-          color: "#2e7d32", // 녹색
+          color: "hsl(var(--chart-4))", // 녹색 계열
         },
         stat2: {
           label: "임시저장",
           value: posts.filter((p) => p.status === "draft").length,
-          color: "#ed6c02", // 주황색
+          color: "hsl(var(--chart-5))", // 주황색 계열
         },
         stat3: {
           label: "보관됨",
           value: posts.filter((p) => p.status === "archived").length,
-          color: "rgba(0, 0, 0, 0.6)", // 회색
+          color: "hsl(var(--muted-foreground))", // 회색
         },
         // 전체 조회수 합계
         stat4: {
           label: "총 조회수",
           value: posts.reduce((sum, p) => sum + p.views, 0),
-          color: "#1976d2", // 파란색
+          color: "hsl(var(--chart-3))", // 파란색 계열
         },
       };
     }
