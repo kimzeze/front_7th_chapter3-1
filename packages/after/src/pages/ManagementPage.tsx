@@ -25,6 +25,7 @@ import {
   AlertDescription,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -372,12 +373,14 @@ export const ManagementPage: React.FC = () => {
         <DialogContent
           className="sm:max-w-[900px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
-          aria-describedby={undefined}
         >
           <DialogHeader>
             <DialogTitle>
               새 {entityType === "user" ? "사용자" : "게시글"} 만들기
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {entityType === "user" ? "사용자" : "게시글"} 정보를 입력하세요
+            </DialogDescription>
           </DialogHeader>
           <div>
             {entityType === "user" ? (
@@ -414,16 +417,18 @@ export const ManagementPage: React.FC = () => {
         <DialogContent
           className="sm:max-w-[900px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
-          aria-describedby="edit-dialog-description"
         >
           <DialogHeader>
             <DialogTitle>
               {entityType === "user" ? "사용자" : "게시글"} 수정
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {entityType === "user" ? "사용자" : "게시글"} 정보를 수정하세요
+            </DialogDescription>
           </DialogHeader>
           <div>
             {selectedItem && (
-              <Alert variant="info" id="edit-dialog-description">
+              <Alert variant="info">
                 <AlertDescription>
                   ID: {selectedItem.id} | 생성일: {selectedItem.createdAt}
                   {entityType === "post" &&
