@@ -292,8 +292,22 @@ export const ManagementPage: React.FC = () => {
             <div className="mb-4 text-right">
               <Button
                 onClick={() => {
-                  const form = entityType === "user" ? userForm : postForm;
-                  form.reset();
+                  if (entityType === "user") {
+                    userForm.reset({
+                      username: "",
+                      email: "",
+                      role: "user",
+                      status: "active",
+                    });
+                  } else {
+                    postForm.reset({
+                      title: "",
+                      author: "",
+                      category: "development",
+                      content: "",
+                      status: "draft",
+                    });
+                  }
                   openCreateModal();
                 }}
               >
